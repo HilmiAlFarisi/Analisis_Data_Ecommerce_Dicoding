@@ -128,7 +128,9 @@ geolocation_df = main_df.groupby('customer_zip_code_prefix', as_index=False).agg
 geometry = [Point(xy) for xy in zip(geolocation_df['geolocation_lng'], geolocation_df['geolocation_lat'])]
 geo_df = gpd.GeoDataFrame(data=geolocation_df.sort_values(by='payment_value', ascending=True), geometry=geometry)
 
-world = gpd.read_file('ne_110m_admin_0_countries.zip')
+BASE_DIR = os.path.dirname(__file__)
+world_path = os.path.join(BASE_DIR, 'ne_110m_admin_0_countries.zip')
+world = gpd.read_file(world_path)
 brazil = world[world['NAME'] == 'Brazil'].to_crs(epsg=4326)
 
 fig, ax = plt.subplots(figsize=(10, 10))
