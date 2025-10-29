@@ -30,7 +30,9 @@ max_date = main_df['order_date'].max()      # = 2018-10-17
 
 with st.sidebar :
     # Menambahkan logo ecommerce
-    st.image('sample_logo.jpg')
+    current_dir_logo = os.path.dirname(os.path.abspath(__file__))
+    logo_path = os.path.join(current_dir_logo, "sample_logo.jpg")
+    st.image(logo_path)
 
     # Menambahkan filter range date dengan input date
     start_date, end_date = st.date_input(
