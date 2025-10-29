@@ -5,10 +5,14 @@ import streamlit as st
 from babel.numbers import format_currency
 import geopandas as gpd
 from shapely.geometry import Point
+import os
 
 
 # Load main_data for dashboard
-main_df = pd.read_csv('main_data.csv')
+current_dir = os.path.dirname(__file__)
+csv_path = os.path.join(current_dir, 'main_data.csv')
+
+main_df = pd.read_csv(csv_path)
 main_df.drop(columns=['seller_id', 
                       'shipping_limit_date', 
                       'product_name_lenght', 
