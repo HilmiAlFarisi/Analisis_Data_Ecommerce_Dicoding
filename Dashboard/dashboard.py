@@ -13,6 +13,8 @@ current_dir = os.path.dirname(__file__)
 csv_path = os.path.join(current_dir, 'main_data.csv')
 
 main_df = pd.read_csv(csv_path)
+rfm_df = main_df.copy()
+
 main_df.drop(columns=['seller_id', 
                       'shipping_limit_date', 
                       'product_name_lenght', 
@@ -21,7 +23,7 @@ main_df.drop(columns=['seller_id',
                       ], axis=1, inplace=True
                       )
 main_df.rename(columns={'order_purchase_timestamp' : 'order_date'}, inplace=True)
-main_df['order_date'] = pd.to_datetime(main_df['order_date']).dt.tz_localize('Asia/Jakarta')
+main_df['order_date'] = pd.to_datetime(main_df['order_date'])
 
 
 # Membuat filter data dengan rentang waktu
@@ -117,16 +119,15 @@ st.write('')
 # Geospatial Analysis
 st.subheader('3. Lokasi Geografis dengan Angka Pembelian Tertinggi')
 
-geolocation_df = main_df.groupby('customer_zip_code_prefix', as_index=False).agg({
+geolocation_df = main_df.groupby('geolocation_city', as_index=False).agg({
     'geolocation_lat' : 'mean',
     'geolocation_lng' : 'mean',
     'payment_value' : 'sum',
-    'geolocation_city' : 'first',
-    'geolocation_state' : 'first'    
 })
 
+geolocation_df = geolocation_df.sort_values(by='payment_value', ascending=True).reset_index(drop=True)
 geometry = [Point(xy) for xy in zip(geolocation_df['geolocation_lng'], geolocation_df['geolocation_lat'])]
-geo_df = gpd.GeoDataFrame(data=geolocation_df.sort_values(by='payment_value', ascending=True), geometry=geometry)
+geo_df = gpd.GeoDataFrame(data=geolocation_df, geometry=geometry)
 
 BASE_DIR = os.path.dirname(__file__)
 world_path = os.path.join(BASE_DIR, 'ne_110m_admin_0_countries.zip')
@@ -147,7 +148,17 @@ st.write('')
 # RFM Analysis
 st.subheader('4. Best Customer Based on RFM Parameters')
 
-rfm_df = main_df.groupby(by='customer_unique_id', as_index=False).agg({
+rfm_df.drop(columns=['seller_id', 
+                      'shipping_limit_date', 
+                      'product_name_lenght', 
+                      'product_description_lenght',
+                      'product_photos_qty',
+                      ], axis=1, inplace=True
+                      )
+rfm_df.rename(columns={'order_purchase_timestamp' : 'order_date'}, inplace=True)
+rfm_df['order_date'] = pd.to_datetime(rfm_df['order_date'])
+
+rfm_df = rfm_df.groupby(by='customer_unique_id', as_index=False).agg({
     'order_date' : 'max',
     'order_id' : 'count',
     'price' : 'sum'
@@ -157,10 +168,11 @@ rfm_df.rename(columns={
     'order_id' : 'frequency',
     'price' : 'monetary'
 },inplace=True)
-rfm_df['max_order_timestamp'] = rfm_df['max_order_timestamp'].dt.date
+rfm_df['max_order_timestamp'] = pd.to_datetime(rfm_df['max_order_timestamp'])
 recent_date = rfm_df['max_order_timestamp'].max()
-rfm_df['recency'] = rfm_df['max_order_timestamp'].apply(lambda x : (recent_date - x).days)
+rfm_df['recency'] = (recent_date - rfm_df['max_order_timestamp']).dt.days
 rfm_df.drop('max_order_timestamp', axis=1, inplace=True)
+
 
 col3, col4, col5 = st.columns(3, border=True)
 
