@@ -15,8 +15,10 @@ Pilih salah satu cara di bawah ini
 conda create --name main-ds python=3.9
 conda activate main-ds
 pip install -r requirements.txt
+```
 
 #### Metode 2 — Menggunakan PIP
+```bash
 cd analisis_data_ecommerce_dicoding
 pipenv install
 pipenv shell
@@ -24,7 +26,7 @@ pip install -r requirements.txt
 ```
 
 ## Run steamlit app
+```bash
 cd Dashboard (address tempat folder dibuat dan di dalamnya terdapat file Dashboard)
-```
 streamlit run dashboard.py
 ```
